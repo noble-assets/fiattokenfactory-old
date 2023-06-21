@@ -1,8 +1,9 @@
 package types
 
 import (
+	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsTypes "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 const TypeMsgUpdateMasterMinter = "update_master_minter"
@@ -40,11 +41,11 @@ func (msg *MsgUpdateMasterMinter) GetSignBytes() []byte {
 func (msg *MsgUpdateMasterMinter) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errors.Wrapf(errorsTypes.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 	_, err = sdk.AccAddressFromBech32(msg.Address)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid master minter address (%s)", err)
+		return errors.Wrapf(errorsTypes.ErrInvalidAddress, "invalid master minter address (%s)", err)
 	}
 	return nil
 }

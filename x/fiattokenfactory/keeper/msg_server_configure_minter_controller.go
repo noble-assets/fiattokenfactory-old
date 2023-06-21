@@ -3,9 +3,8 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/errors"
 	"github.com/circlefin/noble-fiattokenfactory/x/fiattokenfactory/types"
-
-	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -14,11 +13,11 @@ func (k msgServer) ConfigureMinterController(goCtx context.Context, msg *types.M
 
 	masterMinter, found := k.GetMasterMinter(ctx)
 	if !found {
-		return nil, sdkerrors.Wrapf(types.ErrUserNotFound, "master minter is not set")
+		return nil, errors.Wrapf(types.ErrUserNotFound, "master minter is not set")
 	}
 
 	if masterMinter.Address != msg.From {
-		return nil, sdkerrors.Wrapf(types.ErrUnauthorized, "you are not the master minter")
+		return nil, errors.Wrapf(types.ErrUnauthorized, "you are not the master minter")
 	}
 
 	controller := types.MinterController{

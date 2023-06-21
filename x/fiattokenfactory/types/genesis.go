@@ -3,8 +3,10 @@ package types
 import (
 	"fmt"
 
+	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsTypes "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // DefaultGenesis returns the default genesis state
@@ -47,11 +49,11 @@ func (gs GenesisState) Validate() error {
 		mintersIndexMap[index] = struct{}{}
 
 		if _, err := sdk.AccAddressFromBech32(elem.Address); err != nil {
-			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid minter address (%s)", err)
+			return errors.Wrapf(errorsTypes.ErrInvalidAddress, "invalid minter address (%s)", err)
 		}
 
 		if elem.Allowance.IsNil() || elem.Allowance.IsNegative() {
-			return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, "minter allowance cannot be nil or negative")
+			return errors.Wrap(errorsTypes.ErrInvalidCoins, "minter allowance cannot be nil or negative")
 		}
 	}
 
@@ -65,11 +67,11 @@ func (gs GenesisState) Validate() error {
 		minterControllerIndexMap[index] = struct{}{}
 
 		if _, err := sdk.AccAddressFromBech32(elem.Minter); err != nil {
-			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "minter controller has invalid minter address (%s)", err)
+			return errors.Wrapf(errorsTypes.ErrInvalidAddress, "minter controller has invalid minter address (%s)", err)
 		}
 
 		if _, err := sdk.AccAddressFromBech32(elem.Controller); err != nil {
-			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "minter controller has invalid controller address (%s)", err)
+			return errors.Wrapf(errorsTypes.ErrInvalidAddress, "minter controller has invalid controller address (%s)", err)
 		}
 	}
 
@@ -78,7 +80,7 @@ func (gs GenesisState) Validate() error {
 	if gs.Owner != nil {
 		owner, err := sdk.AccAddressFromBech32(gs.Owner.Address)
 		if err != nil {
-			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid owner address (%s)", err)
+			return errors.Wrapf(errorsTypes.ErrInvalidAddress, "invalid owner address (%s)", err)
 		}
 		addresses = append(addresses, owner)
 	}
@@ -86,7 +88,7 @@ func (gs GenesisState) Validate() error {
 	if gs.MasterMinter != nil {
 		masterMinter, err := sdk.AccAddressFromBech32(gs.MasterMinter.Address)
 		if err != nil {
-			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid master minter address (%s)", err)
+			return errors.Wrapf(errorsTypes.ErrInvalidAddress, "invalid master minter address (%s)", err)
 		}
 		addresses = append(addresses, masterMinter)
 	}
@@ -94,7 +96,7 @@ func (gs GenesisState) Validate() error {
 	if gs.Pauser != nil {
 		pauser, err := sdk.AccAddressFromBech32(gs.Pauser.Address)
 		if err != nil {
-			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid pauser address (%s)", err)
+			return errors.Wrapf(errorsTypes.ErrInvalidAddress, "invalid pauser address (%s)", err)
 		}
 		addresses = append(addresses, pauser)
 	}
@@ -102,7 +104,7 @@ func (gs GenesisState) Validate() error {
 	if gs.Blacklister != nil {
 		blacklister, err := sdk.AccAddressFromBech32(gs.Blacklister.Address)
 		if err != nil {
-			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid black lister address (%s)", err)
+			return errors.Wrapf(errorsTypes.ErrInvalidAddress, "invalid black lister address (%s)", err)
 		}
 		addresses = append(addresses, blacklister)
 	}
@@ -129,7 +131,7 @@ func validatePrivileges(addresses []sdk.AccAddress) error {
 			}
 
 			if current.String() == target.String() {
-				return sdkerrors.Wrapf(ErrAlreadyPrivileged, "%s", current)
+				return errors.Wrapf(ErrAlreadyPrivileged, "%s", current)
 			}
 		}
 	}

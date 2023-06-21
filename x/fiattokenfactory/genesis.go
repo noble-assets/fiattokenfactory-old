@@ -1,10 +1,9 @@
 package fiattokenfactory
 
 import (
+	"cosmossdk.io/errors"
 	"github.com/circlefin/noble-fiattokenfactory/x/fiattokenfactory/keeper"
 	"github.com/circlefin/noble-fiattokenfactory/x/fiattokenfactory/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -45,7 +44,7 @@ func InitGenesis(ctx sdk.Context, k *keeper.Keeper, bankKeeper types.BankKeeper,
 	if genState.MintingDenom != nil {
 		_, found := bankKeeper.GetDenomMetaData(ctx, genState.MintingDenom.Denom)
 		if !found {
-			panic(sdkerrors.Wrapf(types.ErrDenomNotRegistered, "fiattokenfactory minting denom %s is not registered in bank module denom_metadata", genState.MintingDenom.Denom))
+			panic(errors.Wrapf(types.ErrDenomNotRegistered, "fiattokenfactory minting denom %s is not registered in bank module denom_metadata", genState.MintingDenom.Denom))
 		}
 		k.SetMintingDenom(ctx, *genState.MintingDenom)
 	}

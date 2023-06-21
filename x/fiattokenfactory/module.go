@@ -5,23 +5,26 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gorilla/mux"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/spf13/cobra"
+	"cosmossdk.io/core/appmodule"
+	"cosmossdk.io/depinject"
 
-	abci "github.com/tendermint/tendermint/abci/types"
-
+	moduleV1 "github.com/circlefin/noble-fiattokenfactory/pulsar/circle/fiattokenfactory/module/v1"
 	"github.com/circlefin/noble-fiattokenfactory/x/fiattokenfactory/client/cli"
 	"github.com/circlefin/noble-fiattokenfactory/x/fiattokenfactory/keeper"
 	"github.com/circlefin/noble-fiattokenfactory/x/fiattokenfactory/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
-	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	codecTypes "github.com/cosmos/cosmos-sdk/codec/types"
+	storeTypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/spf13/cobra"
 )
 
 var (
+	_ appmodule.AppModule   = AppModule{}
 	_ module.AppModule      = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
 )
@@ -50,7 +53,7 @@ func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 }
 
 // RegisterInterfaces registers a module's interface types and their concrete implementations as proto.Message
-func (a AppModuleBasic) RegisterInterfaces(reg cdctypes.InterfaceRegistry) {
+func (a AppModuleBasic) RegisterInterfaces(reg codecTypes.InterfaceRegistry) {
 	types.RegisterInterfaces(reg)
 }
 
@@ -60,16 +63,12 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 }
 
 // ValidateGenesis used to validate the GenesisState, given in its json.RawMessage form
-func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
+func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
 	var genState types.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &genState); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
 	return genState.Validate()
-}
-
-// RegisterRESTRoutes registers the capability module's REST service handlers.
-func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module
@@ -84,7 +83,7 @@ func (a AppModuleBasic) GetTxCmd() *cobra.Command {
 
 // GetQueryCmd returns the root query command for the module. The subcommands of this root command are used by end-users to generate new queries to the subset of the state defined by the module
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
-	return cli.GetQueryCmd(types.StoreKey)
+	return cli.GetQueryCmd()
 }
 
 // ----------------------------------------------------------------------------
@@ -95,35 +94,27 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper        *keeper.Keeper
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
+	bk     types.BankKeeper
+	keeper *keeper.Keeper
 }
 
 func NewAppModule(
 	cdc codec.Codec,
+	bk types.BankKeeper,
 	keeper *keeper.Keeper,
-	accountKeeper types.AccountKeeper,
-	bankKeeper types.BankKeeper,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
+		bk:             bk,
 		keeper:         keeper,
-		accountKeeper:  accountKeeper,
-		bankKeeper:     bankKeeper,
 	}
 }
 
-// Deprecated: use RegisterServices
-func (am AppModule) Route() sdk.Route { return sdk.Route{} }
+// IsOnePerModuleType implements the depinject.OnePerModuleType interface.
+func (am AppModule) IsOnePerModuleType() {}
 
-// Deprecated: use RegisterServices
-func (AppModule) QuerierRoute() string { return types.RouterKey }
-
-// Deprecated: use RegisterServices
-func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
-	return nil
-}
+// IsAppModule implements the appmodule.AppModule interface.
+func (am AppModule) IsAppModule() {}
 
 // RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries
 func (am AppModule) RegisterServices(cfg module.Configurator) {
@@ -140,7 +131,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.Ra
 	// Initialize global index to index in genesis state
 	cdc.MustUnmarshalJSON(gs, &genState)
 
-	InitGenesis(ctx, am.keeper, am.bankKeeper, genState)
+	InitGenesis(ctx, am.keeper, am.bk, genState)
 
 	return []abci.ValidatorUpdate{}
 }
@@ -160,4 +151,40 @@ func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 // EndBlock contains the logic that is automatically triggered at the end of each block
 func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
+}
+
+// App Wiring Setup
+
+func init() {
+	appmodule.Register(&moduleV1.Module{},
+		appmodule.Provide(ProvideModule),
+	)
+}
+
+type FiatTokenFactoryInputs struct {
+	depinject.In
+
+	Config *moduleV1.Module
+	Cdc    codec.Codec
+	Key    *storeTypes.KVStoreKey
+
+	BankKeeper types.BankKeeper
+}
+
+type FiatTokenFactoryOutputs struct {
+	depinject.Out
+
+	FiatTokenFactoryKeeper *keeper.Keeper
+	Module                 appmodule.AppModule
+}
+
+func ProvideModule(in FiatTokenFactoryInputs) FiatTokenFactoryOutputs {
+	fiatTokenFactoryKeeper := keeper.NewKeeper(
+		in.Cdc,
+		in.Key,
+		in.BankKeeper,
+	)
+	m := NewAppModule(in.Cdc, in.BankKeeper, fiatTokenFactoryKeeper)
+
+	return FiatTokenFactoryOutputs{FiatTokenFactoryKeeper: fiatTokenFactoryKeeper, Module: m}
 }

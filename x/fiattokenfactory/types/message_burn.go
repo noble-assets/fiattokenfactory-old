@@ -1,8 +1,9 @@
 package types
 
 import (
+	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsTypes "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 const TypeMsgBurn = "burn"
@@ -40,19 +41,19 @@ func (msg *MsgBurn) GetSignBytes() []byte {
 func (msg *MsgBurn) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errors.Wrapf(errorsTypes.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 
 	if msg.Amount.IsNil() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, "burn amount cannot be nil")
+		return errors.Wrap(errorsTypes.ErrInvalidCoins, "burn amount cannot be nil")
 	}
 
 	if msg.Amount.IsNegative() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, "burn amount cannot be negative")
+		return errors.Wrap(errorsTypes.ErrInvalidCoins, "burn amount cannot be negative")
 	}
 
 	if msg.Amount.IsZero() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, "burn amount cannot be zero")
+		return errors.Wrap(errorsTypes.ErrInvalidCoins, "burn amount cannot be zero")
 	}
 
 	return nil

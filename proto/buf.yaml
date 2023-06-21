@@ -1,6 +1,8 @@
 version: v1
 deps:
-  - buf.build/noble/cosmos-sdk:v0.45.15
+  - buf.build/cosmos/gogo-proto
+  - buf.build/googleapis/googleapis
+  - buf.build/noble/cosmos-sdk:v0.47.3
 breaking:
   use:
     - FILE
