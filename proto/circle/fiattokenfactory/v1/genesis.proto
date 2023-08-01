@@ -8,7 +8,6 @@ import "circle/fiattokenfactory/v1/minter_controller.proto";
 import "circle/fiattokenfactory/v1/minters.proto";
 import "circle/fiattokenfactory/v1/minting_denom.proto";
 import "circle/fiattokenfactory/v1/owner.proto";
-import "circle/fiattokenfactory/v1/params.proto";
 import "circle/fiattokenfactory/v1/paused.proto";
 import "circle/fiattokenfactory/v1/pauser.proto";
 import "gogoproto/gogo.proto";
@@ -18,7 +17,9 @@ option go_package = "github.com/circlefin/noble-fiattokenfactory/x/fiattokenfact
 
 // GenesisState defines the fiattokenfactory module's genesis state.
 message GenesisState {
-  Params params = 1 [(gogoproto.nullable) = false];
+  reserved 1;
+  reserved "params";
+
   repeated Blacklisted blacklisted_list = 2 [(gogoproto.nullable) = false];
   Paused paused = 3;
   MasterMinter master_minter = 4;

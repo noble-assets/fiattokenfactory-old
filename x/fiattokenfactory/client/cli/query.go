@@ -19,7 +19,6 @@ func GetQueryCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	cmd.AddCommand(CmdQueryParams())
 	cmd.AddCommand(CmdListBlacklisted())
 	cmd.AddCommand(CmdShowBlacklisted())
 	cmd.AddCommand(CmdShowPaused())
