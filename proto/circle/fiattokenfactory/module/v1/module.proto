@@ -6,5 +6,5 @@ import "cosmos/app/v1alpha1/module.proto";
 
 // Module is the config object of the FiatTokenFactory module.
 message Module {
-  option (cosmos.app.v1alpha1.module) = {go_import: "github.com/circlefin/noble-fiattokenfactory/x/tokenfactory"};
+  option (cosmos.app.v1alpha1.module) = {go_import: "github.com/circlefin/noble-fiattokenfactory/x/fiattokenfactory"};
 }
