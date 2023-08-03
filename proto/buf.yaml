@@ -1,6 +1,9 @@
 version: v1
 deps:
-  - buf.build/noble/cosmos-sdk:v0.45.15
+  - buf.build/cosmos/gogo-proto
+  - buf.build/googleapis/googleapis
+  # Protobuf didn't change between v0.47.3 and v0.47.4
+  - buf.build/noble/cosmos-sdk:v0.47.3
 breaking:
   use:
     - FILE
@@ -11,4 +14,3 @@ lint:
     - SERVICE_SUFFIX
     - RPC_REQUEST_STANDARD_NAME
     - RPC_RESPONSE_STANDARD_NAME
-#  allow_comment_ignores: true

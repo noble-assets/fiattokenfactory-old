@@ -1,4 +1,4 @@
-.PHONY: proto-setup proto-format proto-lint proto-gen format lint
+.PHONY: proto-all proto-format proto-lint proto-gen format lint
 all: proto-all format lint
 
 ###############################################################################
@@ -22,7 +22,8 @@ lint:
 ###                                Protobuf                                 ###
 ###############################################################################
 
-BUF_VERSION=1.21.0
+BUF_VERSION=1.25.0
+BUILDER_VERSION=0.13.5
 
 proto-all: proto-format proto-lint proto-gen
 
@@ -35,7 +36,7 @@ proto-format:
 proto-gen:
 	@echo "🤖 Generating code from protobuf..."
 	@docker run --rm --volume "$(PWD)":/workspace --workdir /workspace \
-		noble-fiattokenfactory-proto sh ./proto/generate.sh
+		ghcr.io/cosmos/proto-builder:$(BUILDER_VERSION) sh ./proto/generate.sh
 	@echo "✅ Completed code generation!"
 
 proto-lint:
@@ -43,8 +44,3 @@ proto-lint:
 	@docker run --rm --volume "$(PWD)":/workspace --workdir /workspace \
 		bufbuild/buf:$(BUF_VERSION) lint
 	@echo "✅ Completed protobuf linting!"
-
-proto-setup:
-	@echo "🤖 Setting up protobuf environment..."
-	@docker build --rm --tag noble-fiattokenfactory-proto:latest --file proto/Dockerfile .
-	@echo "✅ Setup protobuf environment!"

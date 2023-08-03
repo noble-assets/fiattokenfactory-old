@@ -3,9 +3,8 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/errors"
 	"github.com/circlefin/noble-fiattokenfactory/x/fiattokenfactory/types"
-
-	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -14,11 +13,11 @@ func (k msgServer) Pause(goCtx context.Context, msg *types.MsgPause) (*types.Msg
 
 	pauser, found := k.GetPauser(ctx)
 	if !found {
-		return nil, sdkerrors.Wrapf(types.ErrUserNotFound, "pauser is not set")
+		return nil, errors.Wrapf(types.ErrUserNotFound, "pauser is not set")
 	}
 
 	if pauser.Address != msg.From {
-		return nil, sdkerrors.Wrapf(types.ErrUnauthorized, "you are not the pauser")
+		return nil, errors.Wrapf(types.ErrUnauthorized, "you are not the pauser")
 	}
 
 	paused := types.Paused{

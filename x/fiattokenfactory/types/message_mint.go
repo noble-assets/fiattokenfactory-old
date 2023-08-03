@@ -1,8 +1,9 @@
 package types
 
 import (
+	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsTypes "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 const TypeMsgMint = "mint"
@@ -41,24 +42,24 @@ func (msg *MsgMint) GetSignBytes() []byte {
 func (msg *MsgMint) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errors.Wrapf(errorsTypes.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 
 	_, err = sdk.AccAddressFromBech32(msg.Address)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid address (%s)", err)
+		return errors.Wrapf(errorsTypes.ErrInvalidAddress, "invalid address (%s)", err)
 	}
 
 	if msg.Amount.IsNil() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, "mint amount cannot be nil")
+		return errors.Wrap(errorsTypes.ErrInvalidCoins, "mint amount cannot be nil")
 	}
 
 	if msg.Amount.IsNegative() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, "mint amount cannot be negative")
+		return errors.Wrap(errorsTypes.ErrInvalidCoins, "mint amount cannot be negative")
 	}
 
 	if msg.Amount.IsZero() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, "mint amount cannot be zero")
+		return errors.Wrap(errorsTypes.ErrInvalidCoins, "mint amount cannot be zero")
 	}
 
 	return nil

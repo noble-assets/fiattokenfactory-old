@@ -8,7 +8,6 @@ import "circle/fiattokenfactory/v1/minter_controller.proto";
 import "circle/fiattokenfactory/v1/minters.proto";
 import "circle/fiattokenfactory/v1/minting_denom.proto";
 import "circle/fiattokenfactory/v1/owner.proto";
-import "circle/fiattokenfactory/v1/params.proto";
 import "circle/fiattokenfactory/v1/paused.proto";
 import "circle/fiattokenfactory/v1/pauser.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
@@ -20,10 +19,6 @@ option go_package = "github.com/circlefin/noble-fiattokenfactory/x/fiattokenfact
 
 // Query defines the gRPC querier service.
 service Query {
-  // Parameters queries the parameters of the module.
-  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/noble/fiattokenfactory/params";
-  }
   // Queries a Blacklisted by index.
   rpc Blacklisted(QueryGetBlacklistedRequest) returns (QueryGetBlacklistedResponse) {
     option (google.api.http).get = "/noble/fiattokenfactory/blacklisted/{address}";
@@ -79,15 +74,6 @@ service Query {
     option (google.api.http).get = "/noble/fiattokenfactory/minting_denom";
   }
   // this line is used by starport scaffolding # 2
-}
-
-// QueryParamsRequest is request type for the Query/Params RPC method.
-message QueryParamsRequest {}
-
-// QueryParamsResponse is response type for the Query/Params RPC method.
-message QueryParamsResponse {
-  // params holds all the parameters of this module.
-  Params params = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryGetBlacklistedRequest {
